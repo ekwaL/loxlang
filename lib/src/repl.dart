@@ -39,7 +39,7 @@ void repl(Stream<List<int>> input, IOSink output) async {
   output.write("lox:${_lineNumberToString(line)}> ");
 
   await for (final code in _readLine()) {
-    code.runes.forEach(userInput.add);
+    (code + '\n').runes.forEach(userInput.add);
     // Runes(code).forEach(userInput.add);
     printIfAny();
     line++;
@@ -82,7 +82,6 @@ void repl(Stream<List<int>> input, IOSink output) async {
   //   }
   // }
 }
-
 
 Stream<String> _readLine() =>
     stdin.transform(utf8.decoder).transform(const LineSplitter());

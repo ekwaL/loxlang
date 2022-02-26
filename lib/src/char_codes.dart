@@ -29,3 +29,7 @@ const space = 32; //
 const carriageReturn = 13; //
 const tab = 9; //
 const newLine = 10; //
+
+const endOfText = 3;
+const endOfTransmission = 4;
+const symbolNull = 0;
