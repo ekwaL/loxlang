@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'peeking_iterator.dart';
 import 'token.dart';
 import 'token_types.dart';
 import 'char_codes.dart' as codes;
@@ -10,64 +11,21 @@ typedef CodePoint = int;
 // symbolToUnicode = {
 // }
 
-enum LexerState { scanning, reading }
-
 class Lexer {
   // final StreamIterator<int> _source;
-  final Stream<int> _source;
+  final Stream<PeekingIterable<int>> _source;
   int offset = 0;
   int line = 1;
   int lineOffset = 1;
 
-  bool shouldLookedAhead = true;
-  int currentRune = 0;
-  int nextRune = codes.symbolNull; // 4 == END OF TRANSMISSIN
-
-  LexerState _state = LexerState.scanning;
-  bool Function() _predicate = () => false;
-
-  Lexer(Stream<int> this._source) : super();
+  Lexer(Stream<PeekingIterable<int>> this._source) : super();
   // Lexer(Stream<int> source)
   // : _source = StreamIterator(source),
   // :  super();
 
   Stream<Token> tokens() async* {
-    await for (final rune in _source) {
-      if (_state == LexerState.reading) {
-
-        continue;
-      }
-
-      // _state == LexerState.scanning
-      if (shouldLookedAhead) {
-        shouldLookedAhead = false;
-        nextRune = rune;
-        continue;
-      }
-
-      currentRune = nextRune;
-      nextRune = rune;
-
-      _scanToken();
-
-      // count lines/offsets
-      offset++;
-      lineOffset++;
-      if (currentRune == codes.newLine) {
-        line++;
-        lineOffset = 0;
-      }
+    await for (final runes in _source) {
     }
-
-    if (!shouldLookedAhead) {
-      currentRune = nextRune;
-      nextRune = codes.symbolNull;
-      _scanToken();
-    }
-
-    // currentRune = codes.symbolNull;
-    // _scanToken();
-
     // add eof token at the end
     yield Token(type: TT.eof, lexeme: '', line: line);
   }
@@ -168,6 +126,8 @@ class Lexer {
   String _readWhile(bool Function() predicate) {
     _predicate = predicate;
     _state = LexerState.reading;
+
+
     return "";
   }
 
