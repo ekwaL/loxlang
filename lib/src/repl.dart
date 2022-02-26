@@ -1,3 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'lexer.dart';
+
+const replWelcomeMessage = """
+This is a Lox REPL.
+More info on usage later.
+""";
+
 final List<String> toPrint = [];
 
 void printSync(String line) {
@@ -12,7 +23,7 @@ void printIfAny() {
   toPrint.clear();
 }
 
-void _runREPL(Stream<int> input, Stream<int> output) async {
+void repl(Stream<List<int>> input, IOSink output) async {
   output.writeln(replWelcomeMessage);
 
   final userInput = StreamController<int>(); // UTF16 Code points (Runes)
@@ -20,20 +31,20 @@ void _runREPL(Stream<int> input, Stream<int> output) async {
   final lexer = Lexer(userInput.stream);
   final tokens = lexer.tokens();
   tokens.listen((event) {
-    printSync("Token: $event");
-    // stdout.writeln("Token: $event");
+    // printSync("Token: $event");
+    stdout.writeln("Token: $event");
   });
 
   var line = 1;
   output.write("lox:${_lineNumberToString(line)}> ");
 
   await for (final code in _readLine()) {
-    Runes(code).forEach(input.add);
-
+    code.runes.forEach(userInput.add);
+    // Runes(code).forEach(userInput.add);
+    printIfAny();
     line++;
 
     // print("readline: $code");
-    printIfAny();
     output.write("lox:${_lineNumberToString(line)}> ");
   }
 
@@ -70,4 +81,14 @@ void _runREPL(Stream<int> input, Stream<int> output) async {
   //     input.sink.add(code);
   //   }
   // }
+}
+
+
+Stream<String> _readLine() =>
+    stdin.transform(utf8.decoder).transform(const LineSplitter());
+
+String _lineNumberToString(int line) {
+  if (line ~/ 10 == 0) return "00$line";
+  if (line ~/ 100 == 0) return "0$line";
+  return line.toString();
 }

@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 void error(int line, String message) {

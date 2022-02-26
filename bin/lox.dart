@@ -2,17 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:lox/src/lexer.dart';
+import '../lib/lox.dart';
 
 const usageInfo = """
 Usage:
 lox [script]  to run script
 lox           to run REPL
-""";
-
-const replWelcomeMessage = """
-This is a Lox REPL.
-More info on usage later.
 """;
 
 void main(List<String> arguments) {
@@ -25,8 +20,13 @@ void main(List<String> arguments) {
       break;
     default:
       print(usageInfo);
+      // codes();
       exit(64);
   }
+}
+
+void _runREPL() {
+  repl(stdin, stdout);
 }
 
 void _runFile(String path) {
@@ -45,15 +45,4 @@ void _runFile(String path) {
     // sourceFile.clo
   }
   // f.openRead()
-}
-
-Stream<String> _readLine() =>
-    stdin.transform(utf8.decoder).transform(const LineSplitter());
-
-
-
-String _lineNumberToString(int line) {
-  if (line ~/ 10 == 0) return "00$line";
-  if (line ~/ 100 == 0) return "0$line";
-  return line.toString();
 }
