@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../lib/lox.dart';
+import '../lib/src/char_codes.dart';
 
 const usageInfo = """
 Usage:
@@ -20,7 +21,7 @@ void main(List<String> arguments) {
       break;
     default:
       print(usageInfo);
-      // codes();
+      codes();
       exit(64);
   }
 }

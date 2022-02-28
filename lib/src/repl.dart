@@ -13,17 +13,21 @@ More info on usage later.
 void repl(Stream<List<int>> input, IOSink output) async {
   output.writeln(replWelcomeMessage);
 
-  final userInput =
-      StreamController<PeekingIterable<int>>(); // UTF32 Code points (Runes)
+  // final userInput =
+  //     StreamController<PeekingIterable<int>>(); // UTF32 Code points (Runes)
 
-  final lexer = Lexer(userInput.stream);
+  // final lexer = Lexer(userInput.stream);
   // final tokens = lexer.tokens();
 
   var line = 1;
   output.write("lox:${_lineNumberToString(line)}> ");
 
   await for (final code in _readLine()) {
-    userInput.add(PeekingIterable((code + '\n').runes));
+    // userInput.add(PeekingIterable((code + '\n').runes));
+    final lexer = Lexer(PeekingIterable((code + '\n').runes));
+    for (final token in lexer.getTokens()) {
+      print(token);
+    }
 
     line++;
 

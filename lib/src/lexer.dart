@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'peeking_iterator.dart';
 import 'token.dart';
 import 'token_types.dart';
@@ -8,40 +6,139 @@ import 'char_codes.dart' as codes;
 typedef TT = TokenType;
 typedef CodePoint = int;
 
-// symbolToUnicode = {
-// }
+const keywords = {
+  "and": TT.$and,
+  "class": TT.$class,
+  "else": TT.$else,
+  "false": TT.$false,
+  "fun": TT.$fun,
+  "for": TT.$for,
+  "if": TT.$if,
+  "nil": TT.$nil,
+  "or": TT.$or,
+  "print": TT.$print,
+  "return": TT.$return,
+  "super": TT.$super,
+  "this": TT.$this,
+  "true": TT.$true,
+  "var": TT.$var,
+  "while": TT.$while,
+};
 
 class Lexer {
-  // final StreamIterator<int> _source;
-  final Stream<PeekingIterable<int>> _source;
+  final PeekingIterator<int> _source;
   int offset = 0;
   int line = 1;
-  int lineOffset = 1;
+  int lineOffset = 0;
 
-  Lexer(Stream<PeekingIterable<int>> this._source) : super();
-  // Lexer(Stream<int> source)
-  // : _source = StreamIterator(source),
-  // :  super();
+  final List<Token> _tokens = [];
 
-  Stream<Token> tokens() async* {
-    await for (final runes in _source) {
+  Lexer(PeekingIterable<int> source)
+      : _source = source.iterator,
+        super();
+
+  int? get _nextRune => _source.peek();
+  int get _currentRune => _source.current;
+  bool get _isAtEnd => _nextRune == null;
+
+  bool _moveNext() {
+    offset++;
+    lineOffset++;
+    final moveResult = _source.moveNext();
+    if (_source.current == codes.newLine) {
+      line++;
+      lineOffset = 0;
     }
-    // add eof token at the end
-    yield Token(type: TT.eof, lexeme: '', line: line);
+    return moveResult;
   }
 
-  bool get isAtEnd => nextRune == 0;
+  List<Token> getTokens() {
+    while (_moveNext()) {
+      _scanToken();
+    }
+    // add eof token at the end
+    _tokens.add(Token(type: TT.eof, lexeme: '', line: line));
+    return _tokens;
+  }
 
   bool _match(int expected) {
-    if (isAtEnd) return false;
-    if (nextRune != expected) return false;
+    if (_isAtEnd) return false;
+    if (_nextRune != expected) return false;
 
-    shouldLookedAhead = true;
+    _moveNext();
     return true;
   }
 
+  void _string() {
+    final List<int> value = [];
+    while (_nextRune != codes.doubleQuote && _moveNext()) {
+      value.add(_currentRune);
+    }
+    if (_isAtEnd) {
+      print("error: unterminated string");
+      return;
+    }
+    _moveNext(); // skip closing double quote
+    addToken(TT.string, literal: String.fromCharCodes(value));
+  }
+
+  void _number() {
+    final List<int> value = [_currentRune];
+    while (codes.isDigit(_nextRune) && _moveNext()) value.add(_currentRune);
+    if (_nextRune == codes.dot && _moveNext()) {
+      value.add(_currentRune);
+      while (codes.isDigit(_nextRune) && _moveNext()) value.add(_currentRune);
+    }
+
+    final number = double.tryParse(String.fromCharCodes(value));
+    if (number == null) {
+      print("error: something went wrong while parsing number literal");
+      return;
+    }
+    addToken(TT.number, literal: number);
+  }
+
+  void _identifier() {
+    final List<int> value = [_currentRune];
+
+    while (codes.isAlphaNumeric(_nextRune) && _moveNext())
+      value.add(_currentRune);
+
+    final identifier = String.fromCharCodes(value);
+    final tokenType = keywords[identifier];
+
+    if (tokenType == null) {
+      addToken(TT.identifier, lexeme: identifier);
+      return;
+    }
+
+    addToken(tokenType);
+  }
+
+  String _readWhile(bool Function(int) predicate,
+      [bool includeCurrent = true]) {
+    final List<int> result = [];
+    if (includeCurrent) result.add(_currentRune);
+
+    while (_moveNext()) {
+      if (predicate(_currentRune)) result.add(_currentRune);
+    }
+
+    return String.fromCharCodes(result);
+  }
+
+  void addToken(TokenType type, {String lexeme = "", Object? literal}) {
+    final token = Token(
+      type: type,
+      lexeme: lexeme,
+      line: line,
+      literal: literal,
+    );
+    _tokens.add(token);
+  }
+
   void _scanToken() {
-    switch (currentRune) {
+    switch (_currentRune) {
       case codes.symbolNull:
         // addToken(TT.eof);
         break;
@@ -110,34 +207,35 @@ class Lexer {
         addToken(_match(codes.equal) ? TT.greaterEqual : TT.greater);
         break;
       case codes.slash:
-        if (_match(codes.slash)) {
+        if (_nextRune == codes.slash) {
+          print("readWhile: ${_readWhile((rune) => rune != codes.newLine)}");
         } else {
           addToken(TT.slash);
         }
         break;
-      // Literals
-      // Keywords
+      case codes.whitespace:
+      case codes.tab:
+      case codes.carriageReturn:
+        break; // Ignore whitespace.
+
+      // case codes.newLine:
+      //   line++;
+      //   lineOffset = 0;
+      //   break;
+
+      // String literals
+      case codes.doubleQuote:
+        _string();
+        break;
       default:
-      // TODO: ERROR!
+        // Number literals
+        if (codes.isDigit(_currentRune)) {
+          _number();
+        } else if (codes.isAlphaNumeric(_currentRune)) {
+          _identifier();
+        } else {
+          print("ERROR: Unexpected character");
+        }
     }
-    // return null;
-  }
-
-  String _readWhile(bool Function() predicate) {
-    _predicate = predicate;
-    _state = LexerState.reading;
-
-
-    return "";
-  }
-
-  void doneReading() {
-    _state = LexerState.scanning;
-  }
-
-  Token addToken(TokenType type) {
-    final token = Token(type: type, lexeme: 'lexeme', line: line);
-    print(token);
-    return token;
   }
 }

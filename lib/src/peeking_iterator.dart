@@ -29,6 +29,8 @@ class _PeekingIterator<T> implements PeekingIterator<T> {
       _hasNext = _iterator.moveNext();
     }
     _current = _iterator.current;
+    _hasPeeked = false;
+
     return _hasNext;
   }
 
@@ -40,6 +42,6 @@ class _PeekingIterator<T> implements PeekingIterator<T> {
       _hasPeeked = true;
     }
 
-    return _iterator.current;
+    return _hasNext ? _iterator.current : null;
   }
 }
