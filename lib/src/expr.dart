@@ -18,7 +18,6 @@ class Binary extends Expr {
   final Token operator;
   final Expr right;
 
-  // constructor
   const Binary({
     required this.left,
     required this.operator,
@@ -34,7 +33,6 @@ class Binary extends Expr {
 class Grouping extends Expr {
   final Expr expression;
 
-  // constructor
   const Grouping({
     required this.expression,
   });
@@ -46,9 +44,8 @@ class Grouping extends Expr {
 }
 
 class Literal extends Expr {
-  final Object value;
+  final dynamic value;
 
-  // constructor
   const Literal({
     required this.value,
   });
@@ -63,7 +60,6 @@ class Unary extends Expr {
   final Token operator;
   final Expr right;
 
-  // constructor
   const Unary({
     required this.operator,
     required this.right,

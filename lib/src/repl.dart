@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'lexer.dart';
-import 'peeking_iterator.dart';
+import 'package:lox/src/lexer.dart';
+import 'package:lox/src/peeking_iterator.dart';
+
 
 const replWelcomeMessage = """
 This is a Lox REPL.
