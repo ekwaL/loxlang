@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../lib/lox.dart';
-import '../lib/src/char_codes.dart';
+import 'package:lox/lox.dart';
+import 'package:lox/src/char_codes.dart';
 
 const usageInfo = """
 Usage:
@@ -27,6 +27,16 @@ void main(List<String> arguments) {
 }
 
 void _runREPL() {
+  // final expr = Binary(
+  //   left: Unary(
+  //     operator:
+  //         Token(type: TokenType.minus, lexeme: "-", literal: null, line: 1),
+  //     right: Literal(value: 123),
+  //   ),
+  //   operator: Token(type: TokenType.star, lexeme: "*", literal: null, line: 1),
+  //   right: Grouping(expression: Literal(value: 46.67)),
+  // );
+  // print(AstPrinter().print(expr));
   repl(stdin, stdout);
 }
 
