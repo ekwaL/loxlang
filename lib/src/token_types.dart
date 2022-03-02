@@ -1,3 +1,5 @@
+typedef TT = TokenType;
+
 enum TokenType {
   // Single-character tokens
   leftParen,

@@ -1,9 +1,8 @@
 import 'package:lox/src/error.dart';
 import 'package:lox/src/expr.dart';
+import 'package:lox/src/stmt.dart';
 import 'package:lox/src/token.dart';
 import 'package:lox/src/token_types.dart';
-
-typedef TT = TokenType;
 
 class RuntimeError extends Error {
   final Token token;
@@ -12,11 +11,12 @@ class RuntimeError extends Error {
   RuntimeError(this.token, this.message);
 }
 
-class Interpreter implements Visitor<Object?> {
-  void interpret(Expr expression) {
+class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
+  void interpret(List<Stmt> statements) {
     try {
-      final value = _evaluate(expression);
-      print(_stringify(value));
+      for (final statement in statements) {
+        _execute(statement);
+      }
     } on RuntimeError catch (error) {
       runtimeError(error);
     }
@@ -96,8 +96,19 @@ class Interpreter implements Visitor<Object?> {
     }
   }
 
+  @override
+  Object? visitVariableExpr(Variable expr) {
+    // TODO: implement visitVariableExpr
+    throw UnimplementedError();
+  }
+
+
   Object? _evaluate(Expr expr) {
     return expr.accept(this);
+  }
+
+  void _execute(Stmt stmt) {
+    return stmt.accept(this);
   }
 
   bool _isTruthy(Object? object) {
@@ -132,5 +143,21 @@ class Interpreter implements Visitor<Object?> {
   _checkNumberOperands(Token operator, Object? left, Object? right) {
     if (left is double && right is double) return;
     throw RuntimeError(operator, "Operands must be a number.");
+  }
+
+  @override
+  void visitExpressionStmtStmt(ExpressionStmt stmt) {
+    _evaluate(stmt.expression);
+  }
+
+  @override
+  void visitPrintStmt(Print stmt) {
+    final value = _evaluate(stmt.expression);
+    print(_stringify(value));
+  }
+
+  @override
+  void visitVarStmt(Var stmt) {
+    // TODO: implement visitVarStmt
   }
 }

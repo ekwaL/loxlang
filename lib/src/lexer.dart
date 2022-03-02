@@ -3,7 +3,6 @@ import 'token.dart';
 import 'token_types.dart';
 import 'char_codes.dart' as codes;
 
-typedef TT = TokenType;
 typedef CodePoint = int;
 
 const keywords = {
@@ -49,7 +48,7 @@ class Lexer {
     if (_source.current == codes.newLine) {
       line++;
       lineOffset = 0;
-      _moveNext();
+      return _moveNext();
     }
     return moveResult;
   }

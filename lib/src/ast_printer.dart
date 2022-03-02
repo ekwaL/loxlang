@@ -1,6 +1,11 @@
 import 'package:lox/src/expr.dart';
+import 'package:lox/src/stmt.dart';
 
-class AstPrinter implements Visitor<String> {
+class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
+  String printStatements(List<Stmt> statements) {
+    return statements.map((stmt) => stmt.accept(this)).join("\n");
+  }
+
   String print(Expr expr) {
     return expr.accept(this);
   }
@@ -26,6 +31,11 @@ class AstPrinter implements Visitor<String> {
     return _parenthesize(expr.operator.lexeme, [expr.right]);
   }
 
+  @override
+  String visitVariableExpr(Variable expr) {
+    return expr.name.lexeme;
+  }
+
   _parenthesize(String name, List<Expr> exprs) {
     String content = "($name";
 
@@ -37,5 +47,23 @@ class AstPrinter implements Visitor<String> {
     content += ")";
 
     return content;
+  }
+
+  @override
+  String visitExpressionStmtStmt(ExpressionStmt stmt) {
+    return stmt.expression.accept(this);
+    // return _parenthesize("print", [stmt.expression]);
+  }
+
+  @override
+  String visitPrintStmt(Print stmt) {
+    return _parenthesize("print", [stmt.expression]);
+  }
+
+  @override
+  String visitVarStmt(Var stmt) {
+    final init = stmt.initializer;
+    final List<Expr> exprs = init == null ? [] : [init];
+    return _parenthesize("var ${stmt.name}", exprs);
   }
 }

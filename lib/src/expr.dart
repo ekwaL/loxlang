@@ -3,14 +3,15 @@ import 'package:lox/src/token.dart';
 abstract class Expr {
   const Expr();
 
-  R accept<R>(Visitor<R> visitor);
+  R accept<R>(ExprVisitor<R> visitor);
 }
 
-abstract class Visitor<R> {
+abstract class ExprVisitor<R> {
   R visitBinaryExpr(Binary expr);
   R visitGroupingExpr(Grouping expr);
   R visitLiteralExpr(Literal expr);
   R visitUnaryExpr(Unary expr);
+  R visitVariableExpr(Variable expr);
 }
 
 class Binary extends Expr {
@@ -25,7 +26,7 @@ class Binary extends Expr {
   });
 
   @override
-  R accept<R>(Visitor<R> visitor) {
+  R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitBinaryExpr(this);
   }
 }
@@ -38,7 +39,7 @@ class Grouping extends Expr {
   });
 
   @override
-  R accept<R>(Visitor<R> visitor) {
+  R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitGroupingExpr(this);
   }
 }
@@ -51,7 +52,7 @@ class Literal extends Expr {
   });
 
   @override
-  R accept<R>(Visitor<R> visitor) {
+  R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitLiteralExpr(this);
   }
 }
@@ -66,7 +67,20 @@ class Unary extends Expr {
   });
 
   @override
-  R accept<R>(Visitor<R> visitor) {
+  R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitUnaryExpr(this);
+  }
+}
+
+class Variable extends Expr {
+  final Token name;
+
+  const Variable({
+    required this.name,
+  });
+
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitVariableExpr(this);
   }
 }

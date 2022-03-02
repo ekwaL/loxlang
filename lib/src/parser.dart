@@ -1,9 +1,8 @@
 import 'package:lox/src/error.dart';
 import 'package:lox/src/expr.dart';
+import 'package:lox/src/stmt.dart';
 import 'package:lox/src/token.dart';
 import 'package:lox/src/token_types.dart';
-
-typedef TT = TokenType;
 
 class ParseError extends Error {
   // final String message;
@@ -16,15 +15,17 @@ class Parser {
 
   Parser(this._tokens);
 
-  Expr? parse() {
-    if (!_tokens.moveNext()) return null;
+  List<Stmt> parse() {
+    final List<Stmt> statements = [];
+    if (!_tokens.moveNext()) return statements;
 
-    try {
-      return _expression();
-    } on ParseError catch (err) {
-      // error(err);
-      return null;
+    while (!_isAtEnd) {
+      final stmt = _declaration();
+      if (stmt == null) continue;
+      statements.add(stmt);
     }
+
+    return statements;
   }
 
   // helpers
@@ -96,7 +97,7 @@ class Parser {
     }
   }
 
-  // rules
+  // rules // expressions
   Expr _expression() {
     return _equality();
   }
@@ -168,6 +169,9 @@ class Parser {
       return Literal(value: _consume().literal);
     }
 
+    if (_match([TT.identifier])) {
+      return Variable(name: _consume());
+    }
     if (_match([TT.leftParen])) {
       _consume();
       Expr expr = _expression();
@@ -177,5 +181,54 @@ class Parser {
     }
 
     throw _error(_currentToken, "Expect expression.");
+  }
+
+  // statements
+  Stmt _statement() {
+    if (_match([TT.$print])) return _printStatement();
+
+    return _expressionStatement();
+  }
+
+  Stmt _printStatement() {
+    _consume();
+
+    final value = _expression();
+    _ensure(TT.semicolon, "Expect ';'");
+    return Print(expression: value);
+  }
+
+  Stmt _expressionStatement() {
+    final expr = _expression();
+    _ensure(TT.semicolon, "Expect ';'");
+    return ExpressionStmt(expression: expr);
+  }
+
+  // declaration
+  Stmt? _declaration() {
+    try {
+      if (_match([TT.$var])) return _varDeclaration();
+
+      return _statement();
+    } on ParseError catch (err) {
+      _synchronize();
+      return null;
+    }
+  }
+
+  Stmt _varDeclaration() {
+    _consume();
+    Token name = _ensure(TT.identifier, "Expect variable name");
+
+    // Expr initializer = Literal(value: Token(TT.$nil));
+    Expr? initializer;
+
+    if (_match([TT.equal])) {
+      _consume();
+      initializer = _expression();
+    }
+
+    _ensure(TT.semicolon, "Expect ';' after variable declaration");
+    return Var(name: name, initializer: initializer);
   }
 }

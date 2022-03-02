@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:lox/src/ast_printer.dart';
-import 'package:lox/src/expr.dart';
 import 'package:lox/src/interpreter.dart';
 import 'package:lox/src/lexer.dart';
 import 'package:lox/src/parser.dart';
 import 'package:lox/src/peeking_iterator.dart';
+import 'package:lox/src/stmt.dart';
 
 const replWelcomeMessage = """
 This is a Lox REPL.
@@ -31,18 +31,14 @@ void repl(Stream<List<int>> input, IOSink output) async {
     final lexer = Lexer(PeekingIterable((code + '\n').runes));
     final tokens = lexer.getTokens();
     final parser = Parser(tokens.iterator);
-    final Expr? expression = parser.parse();
+    final List<Stmt> statements = parser.parse();
 
-    if (expression == null) return;
     // if (hadError) return;
-    // for (final token in tokens) {
-    //   output.writeln(token);
-    // }
 
-    output.writeln(AstPrinter().print(expression));
+    output.writeln(AstPrinter().printStatements(statements));
 
     final interpreter = Interpreter();
-    interpreter.interpret(expression);
+    interpreter.interpret(statements);
 
     line++;
 

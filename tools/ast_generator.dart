@@ -11,22 +11,48 @@ void main(List<String> arguments) {
     exit(64);
   }
 
-  final outputFile = arguments[0];
+  final outputDir = arguments[0];
 
   _defineAst(
-    outputFile,
+    outputDir,
     "Expr",
     [
       "Binary   : Expr left, Token operator, Expr right",
       "Grouping : Expr expression",
       "Literal  : Object? value",
-      // "Literal  : dynamic value",
       "Unary    : Token operator, Expr right",
+      "Variable : Token name",
+    ],
+    [
+      "src/token.dart",
+    ],
+  );
+
+  _defineAst(
+    outputDir,
+    "Stmt",
+    [
+      "ExpressionStmt : Expr expression",
+      "Print          : Expr expression",
+      "Var            : Token name, Expr? initializer",
+    ],
+    [
+      "src/expr.dart",
+      "src/token.dart",
     ],
   );
 }
 
-void _defineAst(String outputFile, String baseName, List<String> types) {
+void _defineAst(
+  String outputDir,
+  String baseName,
+  List<String> types,
+  List<String> imports,
+) {
+  final fileName = baseName.toLowerCase() + ".dart";
+  final outputFile = outputDir.endsWith('/')
+      ? outputDir + fileName
+      : outputDir + "/" + fileName;
   final IOSink writer;
   try {
     writer = File(outputFile).openWrite(); // (encoding: utf8);
@@ -36,7 +62,7 @@ void _defineAst(String outputFile, String baseName, List<String> types) {
   }
 
   writer.writeln("""
-  import 'package:lox/src/token.dart';
+  ${imports.map((i) => "import 'package:lox/$i';").join("\n")}
 
   """);
 
@@ -44,7 +70,7 @@ void _defineAst(String outputFile, String baseName, List<String> types) {
   abstract class $baseName {
     const $baseName();
 
-    R accept<R>(Visitor<R> visitor);
+    R accept<R>(${baseName}Visitor<R> visitor);
   }
   """);
 
@@ -74,7 +100,7 @@ _defineType(
     });
 
     @override
-    R accept<R>(Visitor<R> visitor) {
+    R accept<R>(${baseName}Visitor<R> visitor) {
       return visitor.visit$className$baseName(this);
     }
   }
@@ -87,7 +113,7 @@ _defineVisitor(IOSink writer, String baseName, Iterable<String> classNames) {
           "R visit$typeName$baseName($typeName ${baseName.toLowerCase()});")
       .join("\n");
   writer.writeln("""
-  abstract class Visitor<R> {
+  abstract class ${baseName}Visitor<R> {
     $methodNames
   }
   """);
