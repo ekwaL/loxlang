@@ -44,7 +44,7 @@ class Grouping extends Expr {
 }
 
 class Literal extends Expr {
-  final dynamic value;
+  final Object? value;
 
   const Literal({
     required this.value,

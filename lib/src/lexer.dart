@@ -39,6 +39,7 @@ class Lexer {
 
   int? get _nextRune => _source.peek();
   int get _currentRune => _source.current;
+  String get _currentChar => String.fromCharCode(_currentRune);
   bool get _isAtEnd => _nextRune == null;
 
   bool _moveNext() {
@@ -48,6 +49,7 @@ class Lexer {
     if (_source.current == codes.newLine) {
       line++;
       lineOffset = 0;
+      _moveNext();
     }
     return moveResult;
   }
@@ -79,30 +81,37 @@ class Lexer {
       return;
     }
     _moveNext(); // skip closing double quote
-    addToken(TT.string, literal: String.fromCharCodes(value));
+    final literal = String.fromCharCodes(value);
+    addToken(TT.string, literal: literal, lexeme: '"$literal"');
   }
 
   void _number() {
     final List<int> value = [_currentRune];
-    while (codes.isDigit(_nextRune) && _moveNext()) value.add(_currentRune);
+    while (codes.isDigit(_nextRune) && _moveNext()) {
+      value.add(_currentRune);
+    }
     if (_nextRune == codes.dot && _moveNext()) {
       value.add(_currentRune);
-      while (codes.isDigit(_nextRune) && _moveNext()) value.add(_currentRune);
+      while (codes.isDigit(_nextRune) && _moveNext()) {
+        value.add(_currentRune);
+      }
     }
 
-    final number = double.tryParse(String.fromCharCodes(value));
+    final lexeme = String.fromCharCodes(value);
+    final number = double.tryParse(lexeme);
     if (number == null) {
       print("error: something went wrong while parsing number literal");
       return;
     }
-    addToken(TT.number, literal: number);
+    addToken(TT.number, literal: number, lexeme: lexeme);
   }
 
   void _identifier() {
     final List<int> value = [_currentRune];
 
-    while (codes.isAlphaNumeric(_nextRune) && _moveNext())
+    while (codes.isAlphaNumeric(_nextRune) && _moveNext()) {
       value.add(_currentRune);
+    }
 
     final identifier = String.fromCharCodes(value);
     final tokenType = keywords[identifier];
@@ -112,7 +121,7 @@ class Lexer {
       return;
     }
 
-    addToken(tokenType);
+    addToken(tokenType, lexeme: identifier);
   }
 
   String _readWhile(bool Function(int) predicate,
@@ -144,73 +153,66 @@ class Lexer {
         break;
       // Symbol-tokens
       case codes.leftParen:
-        addToken(TT.leftParen);
+        addToken(TT.leftParen, lexeme: _currentChar);
         break;
       case codes.rightParen:
-        addToken(TT.rightParen);
+        addToken(TT.rightParen, lexeme: _currentChar);
         break;
       case codes.leftBrace:
-        addToken(TT.leftBrace);
+        addToken(TT.leftBrace, lexeme: _currentChar);
         break;
       case codes.rightBrace:
-        addToken(TT.rightBrace);
+        addToken(TT.rightBrace, lexeme: _currentChar);
         break;
       case codes.comma:
-        addToken(TT.comma);
+        addToken(TT.comma, lexeme: _currentChar);
         break;
       case codes.dot:
-        addToken(TT.dot);
+        addToken(TT.dot, lexeme: _currentChar);
         break;
       case codes.minus:
-        addToken(TT.minus);
+        addToken(TT.minus, lexeme: _currentChar);
         break;
       case codes.plus:
-        addToken(TT.plus);
+        addToken(TT.plus, lexeme: _currentChar);
         break;
       case codes.semicolon:
-        addToken(TT.semicolon);
+        addToken(TT.semicolon, lexeme: _currentChar);
         break;
       case codes.star:
-        addToken(TT.star);
-        break;
-      case codes.star:
-        addToken(TT.star);
-        break;
-      case codes.star:
-        addToken(TT.star);
-        break;
-      case codes.star:
-        addToken(TT.star);
-        break;
-      case codes.star:
-        addToken(TT.star);
-        break;
-      case codes.star:
-        addToken(TT.star);
-        break;
-      case codes.star:
-        addToken(TT.star);
-        break;
-      case codes.star:
-        addToken(TT.star);
+        addToken(TT.star, lexeme: _currentChar);
         break;
       case codes.bang:
-        addToken(_match(codes.equal) ? TT.bangEqual : TT.bang);
+        addToken(
+          _match(codes.equal) ? TT.bangEqual : TT.bang,
+          lexeme: _currentChar,
+        );
         break;
       case codes.equal:
-        addToken(_match(codes.equal) ? TT.equalEqual : TT.equal);
+        addToken(
+          _match(codes.equal) ? TT.equalEqual : TT.equal,
+          lexeme: _currentChar,
+        );
         break;
       case codes.less:
-        addToken(_match(codes.equal) ? TT.lessEqual : TT.less);
+        addToken(
+          _match(codes.equal) ? TT.lessEqual : TT.less,
+          lexeme: _currentChar,
+        );
         break;
       case codes.greater:
-        addToken(_match(codes.equal) ? TT.greaterEqual : TT.greater);
+        addToken(
+          _match(codes.equal) ? TT.greaterEqual : TT.greater,
+          lexeme: _currentChar,
+        );
         break;
       case codes.slash:
         if (_nextRune == codes.slash) {
-          print("readWhile: ${_readWhile((rune) => rune != codes.newLine)}");
+          // skip comment
+          final comment = _readWhile((rune) => rune != codes.newLine);
+          print("comment: $comment");
         } else {
-          addToken(TT.slash);
+          addToken(TT.slash, lexeme: _currentChar);
         }
         break;
       case codes.whitespace:
@@ -234,7 +236,7 @@ class Lexer {
         } else if (codes.isAlphaNumeric(_currentRune)) {
           _identifier();
         } else {
-          print("ERROR: Unexpected character");
+          // print("ERROR: Unexpected character: $_currentRune");
         }
     }
   }

@@ -1,7 +1,7 @@
+import 'package:lox/src/error.dart';
 import 'package:lox/src/expr.dart';
 import 'package:lox/src/token.dart';
 import 'package:lox/src/token_types.dart';
-import 'package:lox/src/lox.dart' as lox;
 
 typedef TT = TokenType;
 
@@ -15,6 +15,17 @@ class Parser {
   final Iterator<Token> _tokens;
 
   Parser(this._tokens);
+
+  Expr? parse() {
+    if (!_tokens.moveNext()) return null;
+
+    try {
+      return _expression();
+    } on ParseError catch (err) {
+      // error(err);
+      return null;
+    }
+  }
 
   // helpers
   Token get _currentToken => _tokens.current;
@@ -53,8 +64,36 @@ class Parser {
   }
 
   ParseError _error(Token token, String message) {
-    lox.error(token, message);
+    parseError(token, message);
     return ParseError();
+  }
+
+  // error handling
+  void _synchronize() {
+    // _moveNext();
+
+    while (!_isAtEnd) {
+      // if (_currentToken.type == TT.semicolon) {
+      //   _moveNext();
+      //   return;
+      // }
+      switch (_currentToken.type) {
+        case TT.semicolon:
+          _moveNext();
+          return;
+        case TT.$class:
+        case TT.$fun:
+        case TT.$var:
+        case TT.$for:
+        case TT.$if:
+        case TT.$while:
+        case TT.$print:
+        case TT.$return:
+          return;
+        default:
+          _moveNext();
+      }
+    }
   }
 
   // rules
@@ -130,13 +169,13 @@ class Parser {
     }
 
     if (_match([TT.leftParen])) {
+      _consume();
       Expr expr = _expression();
 
       _ensure(TT.rightParen, "Expect ')' after expression.");
       return Grouping(expression: expr);
     }
 
-    // throw ParseError("something went wrong");
-    throw "something went wrong";
+    throw _error(_currentToken, "Expect expression.");
   }
 }
