@@ -172,6 +172,7 @@ class Parser {
     if (_match([TT.identifier])) {
       return Variable(name: _consume());
     }
+
     if (_match([TT.leftParen])) {
       _consume();
       Expr expr = _expression();

@@ -45,11 +45,11 @@ class Lexer {
     offset++;
     lineOffset++;
     final moveResult = _source.moveNext();
-    if (_source.current == codes.newLine) {
-      line++;
-      lineOffset = 0;
-      return _moveNext();
-    }
+    // if (_source.current == codes.newLine) {
+    //   line++;
+    //   lineOffset = 0;
+    //   return _moveNext();
+    // }
     return moveResult;
   }
 
@@ -129,7 +129,8 @@ class Lexer {
     if (includeCurrent) result.add(_currentRune);
 
     while (_moveNext()) {
-      if (predicate(_currentRune)) result.add(_currentRune);
+      if (!predicate(_currentRune)) break;
+      result.add(_currentRune);
     }
 
     return String.fromCharCodes(result);
@@ -219,10 +220,10 @@ class Lexer {
       case codes.carriageReturn:
         break; // Ignore whitespace.
 
-      // case codes.newLine:
-      //   line++;
-      //   lineOffset = 0;
-      //   break;
+      case codes.newLine:
+        line++;
+        lineOffset = 0;
+        break;
 
       // String literals
       case codes.doubleQuote:

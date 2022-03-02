@@ -1,3 +1,4 @@
+import 'package:lox/src/environment.dart';
 import 'package:lox/src/error.dart';
 import 'package:lox/src/expr.dart';
 import 'package:lox/src/stmt.dart';
@@ -12,6 +13,8 @@ class RuntimeError extends Error {
 }
 
 class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
+  final environment = Environment();
+
   void interpret(List<Stmt> statements) {
     try {
       for (final statement in statements) {
@@ -98,8 +101,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
   @override
   Object? visitVariableExpr(Variable expr) {
-    // TODO: implement visitVariableExpr
-    throw UnimplementedError();
+    return environment.get(expr.name);
   }
 
 
@@ -158,6 +160,13 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
   @override
   void visitVarStmt(Var stmt) {
-    // TODO: implement visitVarStmt
+    Object? value;
+    final init = stmt.initializer;
+
+    if (init != null) {
+      value = _evaluate(init);
+    }
+
+    environment.define(stmt.name.lexeme, value);
   }
 }

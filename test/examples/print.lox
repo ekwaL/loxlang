@@ -3,4 +3,16 @@ print 2 == 2;
 print 1 + 2 + 3;
 
 var x ="hi";
+var z;
+
 print x;
+print z;
+// print x + z;
+
+print "hello";
+
+var i = 1;
+var j = 2;
+
+print i + j;
+
