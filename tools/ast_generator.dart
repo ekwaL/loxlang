@@ -17,6 +17,7 @@ void main(List<String> arguments) {
     outputDir,
     "Expr",
     [
+      "Assign   : Token name, Expr value",
       "Binary   : Expr left, Token operator, Expr right",
       "Grouping : Expr expression",
       "Literal  : Object? value",
@@ -32,6 +33,7 @@ void main(List<String> arguments) {
     outputDir,
     "Stmt",
     [
+      "Block          : List<Stmt> statements",
       "ExpressionStmt : Expr expression",
       "Print          : Expr expression",
       "Var            : Token name, Expr? initializer",

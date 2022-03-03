@@ -11,6 +11,11 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
   }
 
   @override
+  String visitAssignExpr(Assign expr) {
+    return _parenthesize("assign ${expr.name.lexeme}", [expr.value]);
+  }
+
+  @override
   String visitBinaryExpr(Binary expr) {
     return _parenthesize(expr.operator.lexeme, [expr.left, expr.right]);
   }
@@ -37,7 +42,7 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
   }
 
   _parenthesize(String name, List<Expr> exprs) {
-    String content = "($name";
+    String content = "(" + name;
 
     for (final expr in exprs) {
       content += " ";
@@ -57,13 +62,27 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
 
   @override
   String visitPrintStmt(Print stmt) {
-    return _parenthesize("print", [stmt.expression]);
+    return _parenthesize("", [stmt.expression]);
   }
 
   @override
   String visitVarStmt(Var stmt) {
     final init = stmt.initializer;
     final List<Expr> exprs = init == null ? [] : [init];
-    return _parenthesize("var ${stmt.name}", exprs);
+    return _parenthesize("var ${stmt.name.lexeme}", exprs);
+  }
+
+  @override
+  String visitBlockStmt(Block stmt) {
+    String content = "{\n";
+
+    for (final stmt in stmt.statements) {
+      content += " ";
+      content += stmt.accept(this);
+    }
+
+    content += "\n}";
+
+    return content;
   }
 }

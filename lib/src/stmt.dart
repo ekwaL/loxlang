@@ -8,9 +8,23 @@ abstract class Stmt {
 }
 
 abstract class StmtVisitor<R> {
+  R visitBlockStmt(Block stmt);
   R visitExpressionStmtStmt(ExpressionStmt stmt);
   R visitPrintStmt(Print stmt);
   R visitVarStmt(Var stmt);
+}
+
+class Block extends Stmt {
+  final List<Stmt> statements;
+
+  const Block({
+    required this.statements,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitBlockStmt(this);
+  }
 }
 
 class ExpressionStmt extends Stmt {

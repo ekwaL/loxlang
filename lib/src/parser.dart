@@ -99,7 +99,25 @@ class Parser {
 
   // rules // expressions
   Expr _expression() {
-    return _equality();
+    return _assignment();
+  }
+
+  Expr _assignment() {
+    Expr expr = _equality();
+
+    if (_match([TT.equal])) {
+      Token equals = _consume();
+      Expr value = _assignment();
+
+      if (expr is Variable) {
+        Token name = expr.name;
+        return Assign(name: name, value: value);
+      }
+
+      _error(equals, "Invalid assignment target");
+    }
+
+    return expr;
   }
 
   Expr _equality() {
@@ -186,6 +204,7 @@ class Parser {
 
   // statements
   Stmt _statement() {
+    if (_match([TT.leftBrace])) return _block();
     if (_match([TT.$print])) return _printStatement();
 
     return _expressionStatement();
@@ -203,6 +222,22 @@ class Parser {
     final expr = _expression();
     _ensure(TT.semicolon, "Expect ';'");
     return ExpressionStmt(expression: expr);
+  }
+
+  Stmt _block() {
+    _consume();
+    final List<Stmt> statements = [];
+    Stmt? dec;
+
+
+    while (!_match([TT.rightBrace]) && !_isAtEnd) {
+      dec = _declaration();
+      if (dec != null) statements.add(dec);
+    }
+
+    _ensure(TT.rightBrace, "Expect '}' at the end of the block."); // after block.
+
+    return Block(statements: statements);
   }
 
   // declaration

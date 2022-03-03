@@ -13,7 +13,7 @@ class RuntimeError extends Error {
 }
 
 class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
-  final environment = Environment();
+  Environment environment = Environment();
 
   void interpret(List<Stmt> statements) {
     try {
@@ -23,6 +23,13 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     } on RuntimeError catch (error) {
       runtimeError(error);
     }
+  }
+
+  @override
+  Object? visitAssignExpr(Assign expr) {
+    Object? value = _evaluate(expr.value);
+    environment.assign(expr.name, value);
+    return value;
   }
 
   @override
@@ -104,7 +111,6 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     return environment.get(expr.name);
   }
 
-
   Object? _evaluate(Expr expr) {
     return expr.accept(this);
   }
@@ -168,5 +174,24 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     }
 
     environment.define(stmt.name.lexeme, value);
+  }
+
+  @override
+  void visitBlockStmt(Block stmt) {
+    _executeBlock(stmt.statements, Environment(environment));
+  }
+
+  void _executeBlock(List<Stmt> statements, Environment env) {
+    final outerEnv = environment;
+
+    try {
+      environment = env;
+
+      for (final stmt in statements) {
+        _execute(stmt);
+      }
+    } finally {
+      environment = outerEnv;
+    }
   }
 }

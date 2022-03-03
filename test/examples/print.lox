@@ -16,3 +16,10 @@ var j = 2;
 
 print i + j;
 
+// print j = 4 = 3;
+
+i = j = 22;
+
+// 3 = 4;
+
+print i + j;

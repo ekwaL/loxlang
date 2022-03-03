@@ -61,6 +61,8 @@ void _runFile(String path) {
     final parser = Parser(tokens.iterator);
     final List<Stmt> statements = parser.parse();
 
+    stdout.writeln(AstPrinter().printStatements(statements));
+
     final interpreter = Interpreter();
     interpreter.interpret(statements);
   } catch (error) {
