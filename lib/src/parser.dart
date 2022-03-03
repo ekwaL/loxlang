@@ -103,7 +103,7 @@ class Parser {
   }
 
   Expr _assignment() {
-    Expr expr = _equality();
+    Expr expr = _or();
 
     if (_match([TT.equal])) {
       Token equals = _consume();
@@ -115,6 +115,30 @@ class Parser {
       }
 
       _error(equals, "Invalid assignment target");
+    }
+
+    return expr;
+  }
+
+  Expr _or() {
+    Expr expr = _and();
+
+    while (_match([TT.$or])) {
+      final operator = _consume();
+      final right = _and();
+      expr = Logical(left: expr, operator: operator, right: right);
+    }
+
+    return expr;
+  }
+
+  Expr _and() {
+    Expr expr = _equality();
+
+    while (_match([TT.$and])) {
+      final operator = _consume();
+      final right = _equality();
+      expr = Logical(left: expr, operator: operator, right: right);
     }
 
     return expr;
@@ -179,9 +203,18 @@ class Parser {
   }
 
   Expr _primary() {
-    if (_match([TT.$false])) return Literal(value: false);
-    if (_match([TT.$true])) return Literal(value: true);
-    if (_match([TT.$nil])) return Literal(value: null);
+    if (_match([TT.$false])) {
+      _consume();
+      return Literal(value: false);
+    }
+    if (_match([TT.$true])) {
+      _consume();
+      return Literal(value: true);
+    }
+    if (_match([TT.$nil])) {
+      _consume();
+      return Literal(value: null);
+    }
 
     if (_match([TT.number, TT.string])) {
       return Literal(value: _consume().literal);
@@ -205,9 +238,26 @@ class Parser {
   // statements
   Stmt _statement() {
     if (_match([TT.leftBrace])) return _block();
+    if (_match([TT.$if])) return _ifStatement();
     if (_match([TT.$print])) return _printStatement();
 
     return _expressionStatement();
+  }
+
+  Stmt _ifStatement() {
+    _consume();
+    _ensure(TT.leftParen, "Expect '(' after 'if'.");
+    final condition = _expression();
+    _ensure(TT.rightParen, "Expect ')' after 'if' condition.");
+    final thenBranch = _statement();
+    Stmt? elseBranch;
+    if (_match([TT.$else])) {
+      _consume();
+      elseBranch = _statement();
+    }
+
+    return IfStmt(
+        condition: condition, thenBranch: thenBranch, elseBranch: elseBranch);
   }
 
   Stmt _printStatement() {
@@ -229,13 +279,13 @@ class Parser {
     final List<Stmt> statements = [];
     Stmt? dec;
 
-
     while (!_match([TT.rightBrace]) && !_isAtEnd) {
       dec = _declaration();
       if (dec != null) statements.add(dec);
     }
 
-    _ensure(TT.rightBrace, "Expect '}' at the end of the block."); // after block.
+    _ensure(
+        TT.rightBrace, "Expect '}' at the end of the block."); // after block.
 
     return Block(statements: statements);
   }

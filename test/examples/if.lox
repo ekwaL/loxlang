@@ -1,0 +1,19 @@
+if (1 == 2) print "fuck yeah"; else print "nope";
+
+var a = 2;
+var b = 1 + 1 + 1;
+if (a <= b) {
+    print "a <= b";
+} else {
+    print "b < a";
+}
+
+if (2 <= 1) print "kek";
+
+if (1 == 1) if (2 != 2) print "first"; else print "second";
+
+print "qwe" and "asd";
+print false and "asd";
+print "123" or "456";
+print false or "123";
+print nil;

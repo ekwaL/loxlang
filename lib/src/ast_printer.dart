@@ -16,6 +16,11 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
   }
 
   @override
+  String visitLogicalExpr(Logical expr) {
+    return _parenthesize(expr.operator.lexeme, [expr.left, expr.right]);
+  }
+
+  @override
   String visitBinaryExpr(Binary expr) {
     return _parenthesize(expr.operator.lexeme, [expr.left, expr.right]);
   }
@@ -61,6 +66,14 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
   }
 
   @override
+  String visitIfStmtStmt(IfStmt stmt) {
+    return _parenthesizeStatements(
+      "if (${stmt.condition.accept(this)})",
+      [stmt.thenBranch, stmt.elseBranch],
+    );
+  }
+
+  @override
   String visitPrintStmt(Print stmt) {
     return _parenthesize("", [stmt.expression]);
   }
@@ -74,14 +87,18 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
 
   @override
   String visitBlockStmt(Block stmt) {
-    String content = "{\n";
+    return _parenthesizeStatements("", stmt.statements);
+  }
 
-    for (final stmt in stmt.statements) {
+  String _parenthesizeStatements(String name, List<Stmt?> stmts) {
+    String content = "{" + name;
+
+    for (final stmt in stmts) {
       content += " ";
-      content += stmt.accept(this);
+      content += stmt?.accept(this) ?? "nil";
     }
 
-    content += "\n}";
+    content += " }";
 
     return content;
   }

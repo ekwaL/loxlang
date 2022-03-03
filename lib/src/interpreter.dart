@@ -33,6 +33,19 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   }
 
   @override
+  Object? visitLogicalExpr(Logical expr) {
+    final left = _evaluate(expr.left);
+
+    if (expr.operator.type == TT.$or) {
+      if (_isTruthy(left)) return left;
+    } else {
+      if (!_isTruthy(left)) return left;
+    }
+
+    return _evaluate(expr.right);
+  }
+
+  @override
   Object? visitBinaryExpr(Binary expr) {
     final right = _evaluate(expr.right);
     final left = _evaluate(expr.left);
@@ -156,6 +169,18 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   @override
   void visitExpressionStmtStmt(ExpressionStmt stmt) {
     _evaluate(stmt.expression);
+  }
+
+  @override
+  void visitIfStmtStmt(IfStmt stmt) {
+    final check = _evaluate(stmt.condition);
+    if (_isTruthy(check)) {
+      _execute(stmt.thenBranch);
+    } else {
+      // TODO: как бы выразить это поэлегантнее?
+      final elseBranch = stmt.elseBranch;
+      if (elseBranch != null) _execute(elseBranch);
+    }
   }
 
   @override
