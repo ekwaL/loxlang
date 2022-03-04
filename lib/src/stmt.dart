@@ -10,9 +10,12 @@ abstract class Stmt {
 abstract class StmtVisitor<R> {
   R visitBlockStmt(Block stmt);
   R visitExpressionStmtStmt(ExpressionStmt stmt);
+  R visitFunctionStmtStmt(FunctionStmt stmt);
   R visitIfStmtStmt(IfStmt stmt);
   R visitPrintStmt(Print stmt);
+  R visitReturnStmt(Return stmt);
   R visitVarStmt(Var stmt);
+  R visitWhileStmt(While stmt);
 }
 
 class Block extends Stmt {
@@ -38,6 +41,23 @@ class ExpressionStmt extends Stmt {
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitExpressionStmtStmt(this);
+  }
+}
+
+class FunctionStmt extends Stmt {
+  final Token name;
+  final List<Token> params;
+  final List<Stmt> body;
+
+  const FunctionStmt({
+    required this.name,
+    required this.params,
+    required this.body,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitFunctionStmtStmt(this);
   }
 }
 
@@ -71,6 +91,21 @@ class Print extends Stmt {
   }
 }
 
+class Return extends Stmt {
+  final Token keyword;
+  final Expr? value;
+
+  const Return({
+    required this.keyword,
+    required this.value,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitReturnStmt(this);
+  }
+}
+
 class Var extends Stmt {
   final Token name;
   final Expr? initializer;
@@ -83,5 +118,20 @@ class Var extends Stmt {
   @override
   R accept<R>(StmtVisitor<R> visitor) {
     return visitor.visitVarStmt(this);
+  }
+}
+
+class While extends Stmt {
+  final Expr condition;
+  final Stmt body;
+
+  const While({
+    required this.condition,
+    required this.body,
+  });
+
+  @override
+  R accept<R>(StmtVisitor<R> visitor) {
+    return visitor.visitWhileStmt(this);
   }
 }

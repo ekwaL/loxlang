@@ -1,0 +1,15 @@
+// var x = 0;
+// while (x < 4) {
+//     print x;
+//     x = x + 1;
+// }
+
+for (var i = 0; i < 5; i = i + 1) {
+    print i;
+}
+
+var j = 0;
+for ( true and false; j < 10;true or false) {
+ j = j + 1;
+ print j;
+}

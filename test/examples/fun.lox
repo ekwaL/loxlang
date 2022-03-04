@@ -1,0 +1,47 @@
+fun x() {
+    print "x";
+}
+
+x();
+
+
+fun printStr(str) {
+    print str;
+}
+
+printStr(10);
+
+
+fun accumulator() {
+    var acc = 0;
+
+    fun inc() {
+        acc = acc + 1;
+        return acc;
+    }
+
+    return inc;
+}
+
+fun sum(x, y) {
+    return x + y;
+}
+
+printStr(sum(2, 2));
+print sum(2, 2);
+
+fun greet(first, last) {
+    print "Hello, " + first + " " + last + "!";
+}
+
+var s = greet("Kek", "lulz");
+
+print s;
+
+print "Accumulator test";
+
+var inc = accumulator();
+print inc();
+print inc();
+print inc();
+print inc();

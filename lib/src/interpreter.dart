@@ -1,3 +1,4 @@
+import 'package:lox/src/callable.dart';
 import 'package:lox/src/environment.dart';
 import 'package:lox/src/error.dart';
 import 'package:lox/src/expr.dart';
@@ -12,8 +13,21 @@ class RuntimeError extends Error {
   RuntimeError(this.token, this.message);
 }
 
+class RuntimeReturn {
+  final Object? value;
+  const RuntimeReturn(this.value);
+}
+
 class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
-  Environment environment = Environment();
+  Environment globals = Environment();
+  late Environment _environment = globals;
+
+  Interpreter() {
+    globals.define(
+      "clock",
+      LoxCallable.fromFunction(0, (_) => DateTime.now().microsecondsSinceEpoch),
+    );
+  }
 
   void interpret(List<Stmt> statements) {
     try {
@@ -28,7 +42,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   @override
   Object? visitAssignExpr(Assign expr) {
     Object? value = _evaluate(expr.value);
-    environment.assign(expr.name, value);
+    _environment.assign(expr.name, value);
     return value;
   }
 
@@ -121,7 +135,28 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
   @override
   Object? visitVariableExpr(Variable expr) {
-    return environment.get(expr.name);
+    return _environment.get(expr.name);
+  }
+
+  @override
+  Object? visitCallExpr(Call expr) {
+    final callee = _evaluate(expr.callee);
+
+    final List<Object?> arguments = [];
+    for (final expr in expr.arguments) {
+      arguments.add(_evaluate(expr));
+    }
+
+    if (callee is! LoxCallable) {
+      throw RuntimeError(expr.paren, "Can only call functions and classes");
+    }
+
+    if (arguments.length != callee.arity) {
+      throw RuntimeError(expr.paren,
+          "Expected ${callee.arity} arguments but got ${arguments.length}.");
+    }
+
+    return callee.call(this, arguments);
   }
 
   Object? _evaluate(Expr expr) {
@@ -172,6 +207,12 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   }
 
   @override
+  void visitFunctionStmtStmt(FunctionStmt stmt) {
+    final fun = LoxFunction(stmt);
+    _environment.define(stmt.name.lexeme, fun);
+  }
+
+  @override
   void visitIfStmtStmt(IfStmt stmt) {
     final check = _evaluate(stmt.condition);
     if (_isTruthy(check)) {
@@ -190,6 +231,21 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   }
 
   @override
+  void visitReturnStmt(Return stmt) {
+    final value = stmt.value;
+    final result = value == null ? null : _evaluate(value);
+
+    throw RuntimeReturn(result);
+  }
+
+  @override
+  void visitWhileStmt(While stmt) {
+    while (_isTruthy(_evaluate(stmt.condition))) {
+      _execute(stmt.body);
+    }
+  }
+
+  @override
   void visitVarStmt(Var stmt) {
     Object? value;
     final init = stmt.initializer;
@@ -198,25 +254,25 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
       value = _evaluate(init);
     }
 
-    environment.define(stmt.name.lexeme, value);
+    _environment.define(stmt.name.lexeme, value);
   }
 
   @override
   void visitBlockStmt(Block stmt) {
-    _executeBlock(stmt.statements, Environment(environment));
+    executeBlock(stmt.statements, Environment(_environment));
   }
 
-  void _executeBlock(List<Stmt> statements, Environment env) {
-    final outerEnv = environment;
+  void executeBlock(List<Stmt> statements, Environment env) {
+    final outerEnv = _environment;
 
     try {
-      environment = env;
+      _environment = env;
 
       for (final stmt in statements) {
         _execute(stmt);
       }
     } finally {
-      environment = outerEnv;
+      _environment = outerEnv;
     }
   }
 }

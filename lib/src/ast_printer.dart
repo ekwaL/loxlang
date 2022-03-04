@@ -75,7 +75,7 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
 
   @override
   String visitPrintStmt(Print stmt) {
-    return _parenthesize("", [stmt.expression]);
+    return _parenthesize("print", [stmt.expression]);
   }
 
   @override
@@ -90,6 +90,16 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
     return _parenthesizeStatements("", stmt.statements);
   }
 
+  @override
+  String visitWhileStmt(While stmt) {
+    String content = "(while ";
+    content += stmt.condition.accept(this);
+    content += " ";
+    content += stmt.body.accept(this);
+    content += " )";
+    return content;
+  }
+
   String _parenthesizeStatements(String name, List<Stmt?> stmts) {
     String content = "{" + name;
 
@@ -101,5 +111,24 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
     content += " }";
 
     return content;
+  }
+
+  @override
+  String visitCallExpr(Call expr) {
+    return _parenthesize(expr.callee.accept(this), expr.arguments);
+  }
+
+  @override
+  String visitFunctionStmtStmt(FunctionStmt stmt) {
+    final params =
+        _parenthesize(stmt.params.map((p) => p.lexeme).join(", "), []);
+    final body = _parenthesizeStatements("", stmt.body);
+    return "(fun ${stmt.name.lexeme} $params $body)";
+  }
+
+  @override
+  String visitReturnStmt(Return stmt) {
+    return _parenthesize(
+        stmt.keyword.lexeme, stmt.value == null ? [] : [stmt.value!]);
   }
 }
