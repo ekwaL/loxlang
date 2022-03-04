@@ -18,3 +18,21 @@ fun bif(b) {
 }
 
 zif(3);
+
+
+var y = 20;
+
+fun p(y) {
+    bif(y);
+    bif(y-2);
+    bif(y-4);
+    // print y;
+    // print y-2;
+    // print y -4;
+}
+
+p(y-2);
+p(y-2);
+p(y-2);
+p(y-2);
+p(y-2);

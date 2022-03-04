@@ -213,7 +213,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
   @override
   void visitFunctionStmtStmt(FunctionStmt stmt) {
-    final fun = LoxFunction(stmt);
+    final fun = LoxFunction(stmt, _environment);
     _environment.define(stmt.name.lexeme, fun);
   }
 

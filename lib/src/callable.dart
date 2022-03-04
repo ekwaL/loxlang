@@ -1,3 +1,4 @@
+import 'package:lox/src/environment.dart';
 import 'package:lox/src/interpreter.dart';
 import 'package:lox/src/stmt.dart';
 
@@ -33,15 +34,16 @@ class _LoxNativeFunction implements LoxCallable {
 
 class LoxFunction implements LoxCallable {
   final FunctionStmt _declaration;
+  final Environment _closure;
 
-  LoxFunction(this._declaration);
+  LoxFunction(this._declaration, this._closure);
 
   @override
   int get arity => _declaration.params.length;
 
   @override
   Object? call(Interpreter interpreter, List<Object?> arguments) {
-    final environment = interpreter.globals;
+    final environment = Environment(_closure);
 
     for (int i = 0; i < _declaration.params.length; i++) {
       environment.define(_declaration.params[i].lexeme, arguments[i]);
