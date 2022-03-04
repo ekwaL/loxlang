@@ -1,0 +1,20 @@
+fun fif(b) {
+    print "fif( " + b + ")";
+    if (b < 0) return;
+    fif(b - 1);
+    fif(b - 2);
+}
+
+fun zif(b) {
+    print "fif( " + b + ")";
+    bif(b - 1);
+    bif(b - 2);
+    bif(b - 3);
+    bif(b - 4);
+}
+
+fun bif(b) {
+    print "bif( " + b + " )";
+}
+
+zif(3);

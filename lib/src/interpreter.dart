@@ -74,6 +74,11 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
         } else if (left is String && right is String) {
           return left + right;
         } else {
+          if (left is double && right is String) {
+            return _stringify(left) + right;
+          } else if (left is String && right is double) {
+            return left + _stringify(right);
+          }
           throw RuntimeError(
               expr.operator, "Operands must be two numbers or two strings");
         }
