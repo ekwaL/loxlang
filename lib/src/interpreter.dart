@@ -1,4 +1,5 @@
 import 'package:lox/src/callable.dart';
+import 'package:lox/src/class.dart';
 import 'package:lox/src/environment.dart';
 import 'package:lox/src/error.dart';
 import 'package:lox/src/expr.dart';
@@ -187,6 +188,16 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     return callee.call(this, arguments);
   }
 
+  @override
+  Object? visitGetExpr(Get expr) {
+    final object = _evaluate(expr.object);
+    if (object is LoxInstance) {
+      return object.get(expr.name);
+    }
+
+    throw RuntimeError(expr.name, "Only instances have properties.");
+  }
+
   Object? _evaluate(Expr expr) {
     return expr.accept(this);
   }
@@ -302,5 +313,12 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     } finally {
       _environment = outerEnv;
     }
+  }
+
+  @override
+  void visitClassStmt(Class stmt) {
+    _environment.define(stmt.name.lexeme, null);
+    final klass = LoxClass(stmt.name.lexeme);
+    _environment.assign(stmt.name, klass);
   }
 }

@@ -1,0 +1,14 @@
+class Greeter {
+    greet() {
+        print "hello, world";
+    }
+}
+
+print Greeter;
+print Greeter();
+
+var inst = Greeter();
+print inst;
+
+"qwe".kek;
+inst.kek;

@@ -119,6 +119,11 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
   }
 
   @override
+  String visitGetExpr(Get expr) {
+    return "${expr.object.accept(this)}.${expr.name.lexeme}";
+  }
+
+  @override
   String visitFunctionStmtStmt(FunctionStmt stmt) {
     final params =
         _parenthesize(stmt.params.map((p) => p.lexeme).join(", "), []);
@@ -130,5 +135,10 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
   String visitReturnStmt(Return stmt) {
     return _parenthesize(
         stmt.keyword.lexeme, stmt.value == null ? [] : [stmt.value!]);
+  }
+
+  @override
+  String visitClassStmt(Class stmt) {
+    return _parenthesizeStatements("class ${stmt.name.lexeme}", stmt.methods);
   }
 }

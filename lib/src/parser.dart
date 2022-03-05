@@ -209,6 +209,10 @@ class Parser {
       if (_match([TT.leftParen])) {
         _consume();
         expr = _finishCall(expr);
+      } else if (_match([TT.dot])) {
+        _consume();
+        final name = _ensure(TT.identifier, "Expect property name after '.' .");
+        expr = Get(name: name, object: expr);
       } else {
         break;
       }
@@ -393,7 +397,7 @@ class Parser {
     return statements;
   }
 
-  Stmt _function(String kind) {
+  FunctionStmt _function(String kind) {
     final name = _ensure(TT.identifier, "Expect $kind name.");
     _ensure(TT.leftParen, "Expect '(' after $kind name.");
     final List<Token> parameters = [];
@@ -428,6 +432,7 @@ class Parser {
     try {
       if (_match([TT.$var])) return _varDeclaration();
       if (_match([TT.$fun])) return _funDeclaration();
+      if (_match([TT.$class])) return _classDeclaration();
 
       return _statement();
     } on ParseError {
@@ -455,5 +460,20 @@ class Parser {
   Stmt _funDeclaration() {
     _consume();
     return _function("function");
+  }
+
+  Stmt _classDeclaration() {
+    _consume();
+    final name = _ensure(TT.identifier, "Expect class name");
+    _ensure(TT.leftBrace, "Expect '{' before class body");
+
+    final List<FunctionStmt> methods = [];
+    while (!_match([TT.rightBrace]) && !_isAtEnd) {
+      methods.add(_function("method"));
+    }
+
+    _ensure(TT.rightBrace, "Expect '}' after class body");
+
+    return Class(name: name, methods: methods);
   }
 }

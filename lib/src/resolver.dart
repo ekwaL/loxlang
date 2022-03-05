@@ -101,6 +101,11 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitGetExpr(Get expr) {
+    _resolveExpr(expr.object);
+  }
+
+  @override
   void visitExpressionStmtStmt(ExpressionStmt stmt) {
     _resolveExpr(stmt.expression);
   }
@@ -178,5 +183,11 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   void visitWhileStmt(While stmt) {
     _resolveExpr(stmt.condition);
     _resolveStmt(stmt.body);
+  }
+
+  @override
+  void visitClassStmt(Class stmt) {
+    _declare(stmt.name);
+    _define(stmt.name);
   }
 }
