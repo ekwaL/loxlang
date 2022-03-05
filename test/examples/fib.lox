@@ -1,38 +1,30 @@
-fun fif(b) {
-    print "fif( " + b + ")";
-    if (b < 0) return;
-    fif(b - 1);
-    fif(b - 2);
+var a = "global";
+
+
+{
+    fun pA() {
+        print a;
+    }
+    pA();
+    var a = "local";
+    pA();
 }
 
-fun zif(b) {
-    print "fif( " + b + ")";
-    bif(b - 1);
-    bif(b - 2);
-    bif(b - 3);
-    bif(b - 4);
+fun bad() {
+  var a = "first";
+  // var a = "second";
+
+  print a;
 }
 
-fun bif(b) {
-    print "bif( " + b + " )";
-}
-
-zif(3);
 
 
-var y = 20;
 
-fun p(y) {
-    bif(y);
-    bif(y-2);
-    bif(y-4);
-    // print y;
-    // print y-2;
-    // print y -4;
-}
+// return "10";
 
-p(y-2);
-p(y-2);
-p(y-2);
-p(y-2);
-p(y-2);
+bad();
+
+// var a = "outer";
+// {
+//   var a = a;
+// }

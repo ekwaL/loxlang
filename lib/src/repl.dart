@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:lox/src/ast_printer.dart';
+import 'package:lox/src/error.dart';
 import 'package:lox/src/interpreter.dart';
 import 'package:lox/src/lexer.dart';
 import 'package:lox/src/parser.dart';
 import 'package:lox/src/peeking_iterator.dart';
+import 'package:lox/src/resolver.dart';
 import 'package:lox/src/stmt.dart';
 
 const replWelcomeMessage = """
@@ -38,7 +40,10 @@ void repl(Stream<List<int>> input, IOSink output) async {
     output.writeln(AstPrinter().printStatements(statements));
 
     final interpreter = Interpreter();
-    interpreter.interpret(statements);
+    final resolver = Resolver(interpreter);
+    if (!hadError) resolver.resolve(statements);
+
+    if (!hadError) interpreter.interpret(statements);
 
     line++;
 

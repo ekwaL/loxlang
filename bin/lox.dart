@@ -2,10 +2,9 @@ import 'dart:io';
 
 import 'package:lox/lox.dart';
 import 'package:lox/src/char_codes.dart';
-import 'package:lox/src/interpreter.dart';
-import 'package:lox/src/lexer.dart';
-import 'package:lox/src/parser.dart';
+import 'package:lox/src/error.dart';
 import 'package:lox/src/peeking_iterator.dart';
+import 'package:lox/src/resolver.dart';
 import 'package:lox/src/stmt.dart';
 
 const usageInfo = """
@@ -64,7 +63,10 @@ void _runFile(String path) {
     stdout.writeln(AstPrinter().printStatements(statements));
 
     final interpreter = Interpreter();
-    interpreter.interpret(statements);
+    final resolver = Resolver(interpreter);
+    if (!hadError) resolver.resolve(statements);
+
+    if (!hadError) interpreter.interpret(statements);
   } catch (error) {
     stderr
         .writeln('Could not open file $path : $error'); // or can not decode it

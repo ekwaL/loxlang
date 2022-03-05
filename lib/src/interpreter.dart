@@ -20,7 +20,9 @@ class RuntimeReturn {
 
 class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   Environment globals = Environment();
+  // late Environment _environment = Environment(globals);
   late Environment _environment = globals;
+  final Map<Expr, int> _locals = {};
 
   Interpreter() {
     globals.define(
@@ -39,10 +41,31 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     }
   }
 
+  void resolve(Expr expr, int depth) {
+    _locals[expr] = depth;
+  }
+
+  Object? _lookupVariable(Token name, Expr expr) {
+    int? depth = _locals[expr];
+    if (depth == null) {
+      return globals.get(name);
+    } else {
+      return _environment.getAt(depth, name.lexeme);
+      // return _environment.getAt(depth, name);
+    }
+  }
+
   @override
   Object? visitAssignExpr(Assign expr) {
     Object? value = _evaluate(expr.value);
-    _environment.assign(expr.name, value);
+
+    int? depth = _locals[expr];
+    if (depth == null) {
+      globals.assign(expr.name, value);
+    } else {
+      _environment.assignAt(depth, expr.name, value);
+    }
+    // _environment.assign(expr.name, value);
     return value;
   }
 
@@ -140,7 +163,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
   @override
   Object? visitVariableExpr(Variable expr) {
-    return _environment.get(expr.name);
+    return _lookupVariable(expr.name, expr);
   }
 
   @override

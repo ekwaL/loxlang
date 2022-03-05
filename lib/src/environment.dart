@@ -36,4 +36,25 @@ class Environment {
 
     throw RuntimeError(name, "Undefined variable '${name.lexeme}'.");
   }
+
+  Environment _ancestor(int depth) {
+    Environment? semanticScope = this;
+    while (depth > 0) {
+      semanticScope = semanticScope?._enclosing;
+      depth--;
+    }
+
+    assert(semanticScope != null, "ERROR : Semantic scope is NOT resolved right.");
+    return semanticScope!;
+  }
+
+  Object? getAt(int depth, String name) {
+    final semanticScope = _ancestor(depth);
+    return semanticScope._values[name];
+  }
+
+  void assignAt(int depth, Token name, Object? value) {
+    final semanticScope = _ancestor(depth);
+    semanticScope._values[name.lexeme] = value;
+  }
 }
