@@ -1,3 +1,4 @@
+import 'package:lox/src/class.dart';
 import 'package:lox/src/environment.dart';
 import 'package:lox/src/interpreter.dart';
 import 'package:lox/src/stmt.dart';
@@ -35,8 +36,9 @@ class _LoxNativeFunction implements LoxCallable {
 class LoxFunction implements LoxCallable {
   final FunctionStmt _declaration;
   final Environment _closure;
+  final bool isInitializer;
 
-  LoxFunction(this._declaration, this._closure);
+  LoxFunction(this._declaration, this._closure, this.isInitializer);
 
   @override
   int get arity => _declaration.params.length;
@@ -53,10 +55,19 @@ class LoxFunction implements LoxCallable {
     try {
       interpreter.executeBlock(_declaration.body, environment);
     } on RuntimeReturn catch (rr) {
+      if (isInitializer) return _closure.getAt(0, "this");
       return rr.value;
     }
 
+    if (isInitializer) return _closure.getAt(0, "this");
+
     return null;
+  }
+
+  LoxFunction bind(LoxInstance instance) {
+    final env = Environment(_closure);
+    env.define("this", instance);
+    return LoxFunction(_declaration, env, isInitializer);
   }
 
   @override

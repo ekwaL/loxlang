@@ -6,12 +6,14 @@ import 'package:lox/src/interpreter.dart';
 import 'package:lox/src/stmt.dart';
 import 'package:lox/src/token.dart';
 
-enum FunctionType { none, function, method }
+enum FunctionType { none, function, method, initializer }
+enum ClassType { none, klass }
 
 class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   final Interpreter _interpreter;
   final Queue<Map<String, bool>> _scopes = ListQueue();
   FunctionType currentFunction = FunctionType.none;
+  ClassType currentClass = ClassType.none;
 
   Resolver(this._interpreter);
 
@@ -112,6 +114,14 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitThisExpr(This expr) {
+    if (currentClass == ClassType.none) {
+      parseError(expr.keyword, "Can't use 'this' outside of class.");
+    }
+    _resolveLocal(expr, expr.keyword);
+  }
+
+  @override
   void visitExpressionStmtStmt(ExpressionStmt stmt) {
     _resolveExpr(stmt.expression);
   }
@@ -154,10 +164,17 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   @override
   void visitReturnStmt(Return stmt) {
     if (currentFunction == FunctionType.none) {
-      parseError(stmt.keyword, "Can't return from top-level code");
+      parseError(stmt.keyword, "Can't return from top-level code.");
     }
+
     final value = stmt.value;
-    if (value != null) _resolveExpr(value);
+    if (value != null) {
+      if (currentFunction == FunctionType.initializer) {
+        parseError(stmt.keyword, "Can't return a value from initializer.");
+      }
+
+      _resolveExpr(value);
+    }
   }
 
   @override
@@ -193,10 +210,24 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
   @override
   void visitClassStmt(Class stmt) {
+    final enclosingClass = currentClass;
+    currentClass = ClassType.klass;
     _declare(stmt.name);
+
+    _beginScope();
+    _scopes.last["this"] = true;
+
     for (final method in stmt.methods) {
-      _resolveFunction(method, FunctionType.method);
+      _resolveFunction(
+          method,
+          method.name.lexeme == "init"
+              ? FunctionType.initializer
+              : FunctionType.method);
     }
+
+    _endScope();
+
     _define(stmt.name);
+    currentClass = enclosingClass;
   }
 }

@@ -263,6 +263,10 @@ class Parser {
       return Literal(value: _consume().literal);
     }
 
+    if (_match([TT.$this])) {
+      return This(keyword: _consume());
+    }
+
     if (_match([TT.identifier])) {
       return Variable(name: _consume());
     }

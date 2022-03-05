@@ -210,7 +210,7 @@ class Lexer {
         if (_nextRune == codes.slash) {
           // skip comment
           final comment = _readWhile((rune) => rune != codes.newLine);
-          print("comment: $comment");
+          // print("comment: $comment");
         } else {
           addToken(TT.slash, lexeme: _currentChar);
         }

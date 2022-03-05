@@ -18,3 +18,42 @@ var hi = inst.greet;
 
 inst.greet();
 hi();
+
+// valid
+// class Foo {
+//   init() {
+//     this.x = 10;
+//     return;
+//     this.x = 30;
+//   }
+// }
+// print "Foo";
+// print Foo();
+// var f = Foo();
+// print f.x;
+// f.x = 20;
+// print f.init();
+// print f.x;
+
+// invalid
+// class Foo {
+//   init() {
+//     return "something else";
+//   }
+// }
+
+// valid
+// class Foo {
+//   init() {
+//     print this;
+//   }
+// }
+// var foo = Foo();
+// print foo.init();
+
+
+// invalid
+// print this;
+// fun notAMethod() {
+//   print this;
+// }

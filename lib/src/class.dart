@@ -14,11 +14,20 @@ class LoxClass implements LoxCallable {
   }
 
   @override
-  int get arity => 0;
+  int get arity {
+    final initializer= findMethod("init");
+    if (initializer == null) return 0;
+    return initializer.arity;
+  }
 
   @override
   Object? call(Interpreter interpreter, List<Object?> arguments) {
     LoxInstance instance = LoxInstance(this);
+
+    final initializer = findMethod("init");
+    if (initializer != null) {
+      initializer.bind(instance).call(interpreter, arguments);
+    }
     return instance;
   }
 
@@ -39,7 +48,7 @@ class LoxInstance {
     }
 
     final method = klass.findMethod(name.lexeme);
-    if (method != null) return method;
+    if (method != null) return method.bind(this);
 
     throw RuntimeError(name, "Undefined property '${name.lexeme}' .");
   }

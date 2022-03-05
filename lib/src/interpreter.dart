@@ -212,6 +212,11 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     return value;
   }
 
+  @override
+  Object? visitThisExpr(This expr) {
+    return _lookupVariable(expr.keyword, expr);
+  }
+
   Object? _evaluate(Expr expr) {
     return expr.accept(this);
   }
@@ -261,7 +266,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
   @override
   void visitFunctionStmtStmt(FunctionStmt stmt) {
-    final fun = LoxFunction(stmt, _environment);
+    final fun = LoxFunction(stmt, _environment, false);
     _environment.define(stmt.name.lexeme, fun);
   }
 
@@ -335,7 +340,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
     final Map<String, LoxFunction> methods = {};
     for (final method in stmt.methods) {
-      final function = LoxFunction(method, _environment);
+      final function = LoxFunction(method, _environment, method.name.lexeme == "init");
       methods[method.name.lexeme] = function;
     }
 

@@ -46,6 +46,11 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
     return expr.name.lexeme;
   }
 
+  @override
+  String visitThisExpr(This expr) {
+    return expr.keyword.lexeme;
+  }
+
   _parenthesize(String name, List<Expr> exprs) {
     String content = "(" + name;
 
