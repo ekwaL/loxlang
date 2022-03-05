@@ -124,6 +124,11 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
   }
 
   @override
+  String visitSetExpr(Set expr) {
+    return "(= ${expr.object.accept(this)}.${expr.name.lexeme} ${expr.value.accept(this)})";
+  }
+
+  @override
   String visitFunctionStmtStmt(FunctionStmt stmt) {
     final params =
         _parenthesize(stmt.params.map((p) => p.lexeme).join(", "), []);

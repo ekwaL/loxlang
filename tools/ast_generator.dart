@@ -21,6 +21,7 @@ void main(List<String> arguments) {
       "Binary   : Expr left, Token operator, Expr right",
       "Call     : Expr callee, Token paren, List<Expr> arguments",
       "Get      : Expr object, Token name",
+      "Set      : Expr object, Token name, Expr value",
       "Grouping : Expr expression",
       "Literal  : Object? value",
       "Logical  : Expr left, Token operator, Expr right",

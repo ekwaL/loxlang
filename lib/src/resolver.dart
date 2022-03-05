@@ -6,7 +6,7 @@ import 'package:lox/src/interpreter.dart';
 import 'package:lox/src/stmt.dart';
 import 'package:lox/src/token.dart';
 
-enum FunctionType { none, function }
+enum FunctionType { none, function, method }
 
 class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   final Interpreter _interpreter;
@@ -106,6 +106,12 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitSetExpr(Set expr) {
+    _resolveExpr(expr.object);
+    _resolveExpr(expr.value);
+  }
+
+  @override
   void visitExpressionStmtStmt(ExpressionStmt stmt) {
     _resolveExpr(stmt.expression);
   }
@@ -188,6 +194,9 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   @override
   void visitClassStmt(Class stmt) {
     _declare(stmt.name);
+    for (final method in stmt.methods) {
+      _resolveFunction(method, FunctionType.method);
+    }
     _define(stmt.name);
   }
 }

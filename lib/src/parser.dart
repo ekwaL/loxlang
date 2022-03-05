@@ -112,6 +112,8 @@ class Parser {
       if (expr is Variable) {
         Token name = expr.name;
         return Assign(name: name, value: value);
+      } else if (expr is Get) {
+        return Set(object: expr.object, name: expr.name, value: value);
       }
 
       _error(equals, "Invalid assignment target");

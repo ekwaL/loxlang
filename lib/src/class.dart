@@ -4,8 +4,9 @@ import 'package:lox/src/token.dart';
 
 class LoxClass implements LoxCallable {
   final String name;
+  final Map<String, LoxFunction> methods;
 
-  const LoxClass(this.name);
+  const LoxClass(this.name, this.methods);
 
   @override
   toString() {
@@ -20,6 +21,10 @@ class LoxClass implements LoxCallable {
     LoxInstance instance = LoxInstance(this);
     return instance;
   }
+
+  LoxFunction? findMethod(String name) {
+    return methods[name];
+  }
 }
 
 class LoxInstance {
@@ -33,7 +38,14 @@ class LoxInstance {
       return fields[name.lexeme];
     }
 
+    final method = klass.findMethod(name.lexeme);
+    if (method != null) return method;
+
     throw RuntimeError(name, "Undefined property '${name.lexeme}' .");
+  }
+
+  void set(Token name, Object? value) {
+    fields[name.lexeme] = value;
   }
 
   @override

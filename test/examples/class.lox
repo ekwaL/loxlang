@@ -10,5 +10,11 @@ print Greeter();
 var inst = Greeter();
 print inst;
 
-"qwe".kek;
-inst.kek;
+// "qwe".kek;
+inst.kek = 10;
+print inst.kek;
+
+var hi = inst.greet;
+
+inst.greet();
+hi();

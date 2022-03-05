@@ -198,6 +198,20 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     throw RuntimeError(expr.name, "Only instances have properties.");
   }
 
+  @override
+  Object? visitSetExpr(Set expr) {
+    final object = _evaluate(expr.object);
+
+    if (object is! LoxInstance) {
+      throw RuntimeError(expr.name, "Only instances have fields.");
+    }
+
+    final value = _evaluate(expr.value);
+    object.set(expr.name, value);
+
+    return value;
+  }
+
   Object? _evaluate(Expr expr) {
     return expr.accept(this);
   }
@@ -318,7 +332,15 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   @override
   void visitClassStmt(Class stmt) {
     _environment.define(stmt.name.lexeme, null);
-    final klass = LoxClass(stmt.name.lexeme);
+
+    final Map<String, LoxFunction> methods = {};
+    for (final method in stmt.methods) {
+      final function = LoxFunction(method, _environment);
+      methods[method.name.lexeme] = function;
+    }
+
+    final klass = LoxClass(stmt.name.lexeme, methods);
+
     _environment.assign(stmt.name, klass);
   }
 }
