@@ -267,6 +267,13 @@ class Parser {
       return This(keyword: _consume());
     }
 
+    if (_match([TT.$super])) {
+      final keyword = _consume();
+      _ensure(TT.dot, "Expect '.' after 'super'.");
+      final method = _ensure(TT.identifier, "Expect superclass method name.");
+      return Super(keyword: keyword, method: method);
+    }
+
     if (_match([TT.identifier])) {
       return Variable(name: _consume());
     }
@@ -471,6 +478,14 @@ class Parser {
   Stmt _classDeclaration() {
     _consume();
     final name = _ensure(TT.identifier, "Expect class name");
+    Variable? superclass;
+
+    if (_match([TT.less])) {
+      _consume();
+      final superclassName = _ensure(TT.identifier, "Expect superclass name");
+      superclass = Variable(name: superclassName);
+    }
+
     _ensure(TT.leftBrace, "Expect '{' before class body");
 
     final List<FunctionStmt> methods = [];
@@ -480,6 +495,6 @@ class Parser {
 
     _ensure(TT.rightBrace, "Expect '}' after class body");
 
-    return Class(name: name, methods: methods);
+    return Class(name: name, superclass: superclass, methods: methods);
   }
 }

@@ -4,9 +4,10 @@ import 'package:lox/src/token.dart';
 
 class LoxClass implements LoxCallable {
   final String name;
+  final LoxClass? superclass;
   final Map<String, LoxFunction> methods;
 
-  const LoxClass(this.name, this.methods);
+  const LoxClass(this.name, this.superclass, this.methods);
 
   @override
   toString() {
@@ -32,7 +33,11 @@ class LoxClass implements LoxCallable {
   }
 
   LoxFunction? findMethod(String name) {
-    return methods[name];
+    if (methods.containsKey(name)) {
+      return methods[name];
+    }
+
+    return superclass?.findMethod(name);
   }
 }
 

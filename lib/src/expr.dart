@@ -13,6 +13,7 @@ abstract class ExprVisitor<R> {
   R visitGetExpr(Get expr);
   R visitSetExpr(Set expr);
   R visitThisExpr(This expr);
+  R visitSuperExpr(Super expr);
   R visitGroupingExpr(Grouping expr);
   R visitLiteralExpr(Literal expr);
   R visitLogicalExpr(Logical expr);
@@ -111,6 +112,21 @@ class This extends Expr {
   @override
   R accept<R>(ExprVisitor<R> visitor) {
     return visitor.visitThisExpr(this);
+  }
+}
+
+class Super extends Expr {
+  final Token keyword;
+  final Token method;
+
+  const Super({
+    required this.keyword,
+    required this.method,
+  });
+
+  @override
+  R accept<R>(ExprVisitor<R> visitor) {
+    return visitor.visitSuperExpr(this);
   }
 }
 

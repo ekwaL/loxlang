@@ -23,6 +23,7 @@ void main(List<String> arguments) {
       "Get      : Expr object, Token name",
       "Set      : Expr object, Token name, Expr value",
       "This     : Token keyword",
+      "Super    : Token keyword, Token method",
       "Grouping : Expr expression",
       "Literal  : Object? value",
       "Logical  : Expr left, Token operator, Expr right",
@@ -39,7 +40,7 @@ void main(List<String> arguments) {
     "Stmt",
     [
       "Block          : List<Stmt> statements",
-      "Class          : Token name, List<FunctionStmt> methods",
+      "Class          : Token name, Variable? superclass, List<FunctionStmt> methods",
       "ExpressionStmt : Expr expression",
       "FunctionStmt   : Token name, List<Token> params, List<Stmt> body",
       "IfStmt         : Expr condition, Stmt thenBranch, Stmt? elseBranch",

@@ -2,10 +2,10 @@ import 'package:lox/src/token.dart';
 import 'interpreter.dart';
 
 class Environment {
-  final Environment? _enclosing;
+  final Environment? enclosing;
   final Map<String, Object?> _values = {};
 
-  Environment([this._enclosing]);
+  Environment([this.enclosing]);
 
   void define(String name, Object? value) {
     _values[name] = value;
@@ -18,8 +18,8 @@ class Environment {
       return;
     }
 
-    if (_enclosing != null) {
-      _enclosing?.assign(name, value);
+    if (enclosing != null) {
+      enclosing?.assign(name, value);
       return;
     }
 
@@ -31,7 +31,7 @@ class Environment {
       return _values[name.lexeme];
     }
 
-    final outer = _enclosing?.get(name);
+    final outer = enclosing?.get(name);
     if (outer != null) return outer;
 
     throw RuntimeError(name, "Undefined variable '${name.lexeme}'.");
@@ -40,7 +40,7 @@ class Environment {
   Environment _ancestor(int depth) {
     Environment? semanticScope = this;
     while (depth > 0) {
-      semanticScope = semanticScope?._enclosing;
+      semanticScope = semanticScope?.enclosing;
       depth--;
     }
 

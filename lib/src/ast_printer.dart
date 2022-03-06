@@ -51,6 +51,11 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
     return expr.keyword.lexeme;
   }
 
+  @override
+  String visitSuperExpr(Super expr) {
+    return expr.keyword.lexeme + "." + expr.method.lexeme;
+  }
+
   _parenthesize(String name, List<Expr> exprs) {
     String content = "(" + name;
 
@@ -149,6 +154,10 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
 
   @override
   String visitClassStmt(Class stmt) {
-    return _parenthesizeStatements("class ${stmt.name.lexeme}", stmt.methods);
+    final superclass = stmt.superclass;
+    final superclassText =
+        superclass == null ? "" : " < " + superclass.name.lexeme;
+    return _parenthesizeStatements(
+        "class ${stmt.name.lexeme}$superclassText", stmt.methods);
   }
 }

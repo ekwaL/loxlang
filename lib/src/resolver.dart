@@ -7,7 +7,7 @@ import 'package:lox/src/stmt.dart';
 import 'package:lox/src/token.dart';
 
 enum FunctionType { none, function, method, initializer }
-enum ClassType { none, klass }
+enum ClassType { none, klass, subclass }
 
 class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   final Interpreter _interpreter;
@@ -122,6 +122,18 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   @override
+  void visitSuperExpr(Super expr) {
+    if (currentClass == ClassType.none) {
+      parseError(expr.keyword, "Can't use 'super' outside of a class.");
+    } else if (currentClass == ClassType.klass) {
+      parseError(
+          expr.keyword, "Can't use 'super' in a class with no superclass.");
+    }
+
+    _resolveLocal(expr, expr.keyword);
+  }
+
+  @override
   void visitExpressionStmtStmt(ExpressionStmt stmt) {
     _resolveExpr(stmt.expression);
   }
@@ -214,6 +226,20 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     currentClass = ClassType.klass;
     _declare(stmt.name);
 
+    final superclass = stmt.superclass;
+    if (superclass != null && stmt.name.lexeme == superclass.name.lexeme) {
+      parseError(superclass.name, "A class can't inherit from itself.");
+    }
+    if (superclass != null) {
+      currentClass = ClassType.subclass;
+      _resolveExpr(superclass);
+    }
+
+    if (superclass != null) {
+      _beginScope();
+      _scopes.last["super"] = true;
+    }
+
     _beginScope();
     _scopes.last["this"] = true;
 
@@ -226,6 +252,8 @@ class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     }
 
     _endScope();
+
+    if (superclass != null) _endScope();
 
     _define(stmt.name);
     currentClass = enclosingClass;

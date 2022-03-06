@@ -28,7 +28,7 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   Interpreter() {
     globals.define(
       "clock",
-      LoxCallable.fromFunction(0, (_) => DateTime.now().microsecondsSinceEpoch),
+      LoxCallable.fromFunction(0, (_) => DateTime.now().microsecondsSinceEpoch.toDouble()),
     );
   }
 
@@ -217,6 +217,22 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     return _lookupVariable(expr.keyword, expr);
   }
 
+  @override
+  Object? visitSuperExpr(Super expr) {
+    final depth = _locals[expr];
+    assert(depth != null, "Can not resolve 'super' at ${expr.keyword.line}.");
+    final superclass = _environment.getAt(depth!, "super") as LoxClass;
+    final object = _environment.getAt(depth - 1, "this") as LoxInstance;
+
+    final method = superclass.findMethod(expr.method.lexeme);
+    if (method == null) {
+      throw RuntimeError(
+          expr.method, "Undefined property '${expr.method.lexeme}'.");
+    }
+
+    return method.bind(object);
+  }
+
   Object? _evaluate(Expr expr) {
     return expr.accept(this);
   }
@@ -336,15 +352,36 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
 
   @override
   void visitClassStmt(Class stmt) {
+    final superclass = stmt.superclass;
+    Object? superclassValue;
+    if (superclass != null) {
+      superclassValue = _evaluate(superclass);
+
+      if (superclassValue is! LoxClass) {
+        throw RuntimeError(superclass.name, "Superclass must be a class.");
+      }
+    }
+
     _environment.define(stmt.name.lexeme, null);
+
+    if (superclass != null) {
+      _environment = Environment(_environment);
+      _environment.define("super", superclassValue);
+    }
 
     final Map<String, LoxFunction> methods = {};
     for (final method in stmt.methods) {
-      final function = LoxFunction(method, _environment, method.name.lexeme == "init");
+      final function =
+          LoxFunction(method, _environment, method.name.lexeme == "init");
       methods[method.name.lexeme] = function;
     }
 
-    final klass = LoxClass(stmt.name.lexeme, methods);
+    final klass =
+        LoxClass(stmt.name.lexeme, superclassValue as LoxClass?, methods);
+
+    if (superclass != null) {
+      _environment = _environment.enclosing ?? globals;
+    }
 
     _environment.assign(stmt.name, klass);
   }
