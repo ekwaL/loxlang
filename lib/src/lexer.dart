@@ -45,11 +45,6 @@ class Lexer {
     offset++;
     lineOffset++;
     final moveResult = _source.moveNext();
-    // if (_source.current == codes.newLine) {
-    //   line++;
-    //   lineOffset = 0;
-    //   return _moveNext();
-    // }
     return moveResult;
   }
 
@@ -149,7 +144,6 @@ class Lexer {
   void _scanToken() {
     switch (_currentRune) {
       case codes.symbolNull:
-        // addToken(TT.eof);
         break;
       // Symbol-tokens
       case codes.leftParen:
@@ -210,7 +204,6 @@ class Lexer {
         if (_nextRune == codes.slash) {
           // skip comment
           final comment = _readWhile((rune) => rune != codes.newLine);
-          // print("comment: $comment");
         } else {
           addToken(TT.slash, lexeme: _currentChar);
         }

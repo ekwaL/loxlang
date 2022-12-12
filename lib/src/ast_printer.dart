@@ -72,7 +72,6 @@ class AstPrinter implements ExprVisitor<String>, StmtVisitor<String> {
   @override
   String visitExpressionStmtStmt(ExpressionStmt stmt) {
     return stmt.expression.accept(this);
-    // return _parenthesize("print", [stmt.expression]);
   }
 
   @override

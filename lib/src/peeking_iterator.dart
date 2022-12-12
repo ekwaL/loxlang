@@ -37,7 +37,6 @@ class _PeekingIterator<T> implements PeekingIterator<T> {
   @override
   T? peek() {
     if (!_hasPeeked) {
-      // _current = _iterator.current;
       _hasNext = _iterator.moveNext();
       _hasPeeked = true;
     }

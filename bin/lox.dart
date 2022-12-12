@@ -29,23 +29,10 @@ void main(List<String> arguments) {
 }
 
 void _runREPL() {
-  // final expr = Binary(
-  //   left: Unary(
-  //     operator:
-  //         Token(type: TokenType.minus, lexeme: "-", literal: null, line: 1),
-  //     right: Literal(value: 123),
-  //   ),
-  //   operator: Token(type: TokenType.star, lexeme: "*", literal: null, line: 1),
-  //   right: Grouping(expression: Literal(value: 46.67)),
-  // );
-  // print(AstPrinter().print(expr));
   repl(stdin, stdout);
 }
 
 void _runFile(String path) {
-  // if (await FileSystemEntity.isDirectory(path)) {
-  //   stderr.writeln('error: $path is a directory');
-  // }
   try {
     final sourceFile = File(path);
     // TODO: Throws a FormatException

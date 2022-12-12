@@ -9,7 +9,6 @@ class Environment {
 
   void define(String name, Object? value) {
     _values[name] = value;
-    // _values.putIfAbsent(key, () => null).add(name, value);
   }
 
   void assign(Token name, Object? value) {

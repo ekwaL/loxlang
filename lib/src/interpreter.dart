@@ -21,7 +21,6 @@ class RuntimeReturn {
 
 class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
   Environment globals = Environment();
-  // late Environment _environment = Environment(globals);
   late Environment _environment = globals;
   final Map<Expr, int> _locals = {};
 
@@ -52,7 +51,6 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
       return globals.get(name);
     } else {
       return _environment.getAt(depth, name.lexeme);
-      // return _environment.getAt(depth, name);
     }
   }
 
@@ -292,7 +290,6 @@ class Interpreter implements ExprVisitor<Object?>, StmtVisitor<void> {
     if (_isTruthy(check)) {
       _execute(stmt.thenBranch);
     } else {
-      // TODO: как бы выразить это поэлегантнее?
       final elseBranch = stmt.elseBranch;
       if (elseBranch != null) _execute(elseBranch);
     }

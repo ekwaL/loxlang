@@ -4,11 +4,7 @@ import 'package:lox/src/stmt.dart';
 import 'package:lox/src/token.dart';
 import 'package:lox/src/token_types.dart';
 
-class ParseError extends Error {
-  // final String message;
-
-  // ParseError(this.message);
-}
+class ParseError extends Error {}
 
 class Parser {
   final Iterator<Token> _tokens;
@@ -38,10 +34,6 @@ class Parser {
 
   bool _match(Iterable<TokenType> types) {
     for (final type in types) {
-      // if (_check(type)) {
-      //   _moveNext();
-      //   return true;
-      // }
       if (_check(type)) return true;
     }
     return false;
@@ -71,13 +63,7 @@ class Parser {
 
   // error handling
   void _synchronize() {
-    // _moveNext();
-
     while (!_isAtEnd) {
-      // if (_currentToken.type == TT.semicolon) {
-      //   _moveNext();
-      //   return;
-      // }
       switch (_currentToken.type) {
         case TT.semicolon:
           _moveNext();
@@ -458,7 +444,6 @@ class Parser {
     _consume();
     Token name = _ensure(TT.identifier, "Expect variable name");
 
-    // Expr initializer = Literal(value: Token(TT.$nil));
     Expr? initializer;
 
     if (_match([TT.equal])) {
